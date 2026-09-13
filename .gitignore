@@ -1,0 +1,14 @@
+# === Engine: Godot ===
+.godot/
+*.translation
+export_presets.cfg
+# Uncomment if using .import-based asset workflow:
+# *.import
+
+# === Secrets ===
+.env
+.env.local
+
+# === OS ===
+.DS_Store
+Thumbs.db
