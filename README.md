@@ -16,6 +16,10 @@ and `design/gdd/game-concept.md` for the full game concept this is testing.
 
 ## Showcase
 
+<video src="docs/demo.mp4" controls width="700">
+  Demo video — see <a href="docs/demo.mp4">docs/demo.mp4</a>.
+</video>
+
 Built with [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)
 to answer a real integration question with a live third-party API, not just
 prototype plumbing:
