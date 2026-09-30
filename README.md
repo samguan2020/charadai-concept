@@ -14,6 +14,25 @@ API load and play back correctly on a runtime-imported skeleton in Godot 4.6?
 See `production/session-state/active.md` for the full hypothesis and scope,
 and `design/gdd/game-concept.md` for the full game concept this is testing.
 
+## Showcase
+
+Built with [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)
+to answer a real integration question with a live third-party API, not just
+prototype plumbing:
+
+- **Live third-party API integration**: [`scripts/saymotion_client.gd`](scripts/saymotion_client.gd)
+  drives DeepMotion's [SayMotion](https://www.saymotion.ai) text-to-motion API
+  end to end at runtime — Basic-auth handshake, async job submission, status
+  polling with a timeout, and streaming the resulting `.glb` back into a live
+  Godot scene.
+- **Runtime asset pipeline, not a pre-baked import**: motion clips are
+  generated from a player's free-text prompt, downloaded, and loaded into a
+  running `Skeleton3D` via `GLTFDocument.append_from_file()` — the character's
+  motion doesn't exist until the API generates it, mid-session.
+- **Fails visibly, never silently**: every network/API failure surfaces
+  in-UI with the exact error, and a manual `.glb`-upload button stays
+  available as a fallback — a live demo can't hard-stop on an API hiccup.
+
 ## Required setup: `.env` (never commit this file)
 
 Create `prototypes/charadai-concept/.env` (already covered by the repo's
