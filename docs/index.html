@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A concept prototype that integrates DeepMotion's SayMotion text-to-motion API live, at runtime, inside Godot 4.6 — built with Claude Code Game Studios.">
+<title>CharadAI Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#eef0f5; --surface:#ffffff; --surface-2:#e3e6ef; --ink:#151a2c; --muted:#565d78; --line:#cfd4e2;
+  --gold:#a8790c; --blue:#2c58c9; --red:#b8322f; --green:#2f8a4e;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0f1220; --surface:#171b2c; --surface-2:#1f2438; --ink:#e8eaf3; --muted:#9aa1bb; --line:#2c3250;
+    --gold:#e3b544; --blue:#7c9df5; --red:#ec7270; --green:#63c083;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0f1220; --surface:#171b2c; --surface-2:#1f2438; --ink:#e8eaf3; --muted:#9aa1bb; --line:#2c3250;
+  --gold:#e3b544; --blue:#7c9df5; --red:#ec7270; --green:#63c083;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px;padding-block:40px 72px}
+a{color:var(--blue);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h2{font-size:clamp(26px,3.4vw,34px);font-weight:800;letter-spacing:-.01em}
+h3{font-size:19px;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--surface-2);padding:1px 6px;border-radius:4px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:48px;align-items:center;padding-bottom:40px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(40px,6.4vw,68px);font-weight:800;letter-spacing:-.025em;margin-top:14px}
+.thesis{font-size:21px;line-height:1.5;margin-top:20px;max-width:38ch}
+.thesis strong{color:var(--blue)}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;padding:10px 14px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none}
+.btn:hover{border-color:var(--blue)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+:root:not([data-theme="light"]) .btn.primary{color:#fff}
+
+.demo{justify-self:end;width:100%}
+.demo video{width:100%;display:block;border-radius:10px;background:#000;box-shadow:0 18px 40px -20px rgba(20,16,40,.55)}
+.caption{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:0;border-bottom:1px solid var(--line)}
+.stat{padding:24px 18px 24px 0;display:flex;flex-direction:column;gap:4px}
+.stat + .stat{padding-left:18px;border-left:1px solid var(--line)}
+.stat b{font-family:var(--display);font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.stat span{font-size:14px;color:var(--muted);line-height:1.35}
+
+section{padding-top:64px}
+.lede{color:var(--muted);max-width:64ch;margin-top:12px}
+.sec-head{display:flex;flex-direction:column;gap:8px}
+
+/* status badge */
+.status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 40%,var(--line));padding:6px 12px;border-radius:999px;margin-top:20px}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
+
+/* pillars */
+.pillars{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pillar{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.pillar .num{font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:600}
+.pillar p{font-size:15px;color:var(--muted)}
+
+/* pipeline diagram */
+.arch{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;overflow-x:auto}
+.arch svg{display:block;min-width:760px;width:100%;height:auto}
+.arch text{font-family:var(--body)}
+
+.lessons{margin-top:28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.lesson{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.lesson .sym{font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.lesson .fix{font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.lesson p{font-size:14.5px}
+
+.cut{margin-top:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:20px 24px}
+.cut ul{margin:10px 0 0;padding-left:20px;color:var(--muted);font-size:15px;line-height:1.8}
+
+/* fde map */
+.fde{margin-top:28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px}
+.fde div{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.fde p{font-size:15.5px;color:var(--muted)}
+.foot{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 24px}
+
+@media (max-width:860px){
+  .hero,.pillars{grid-template-columns:1fr}
+  .demo{justify-self:start}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat:nth-child(n+3){padding-left:0;border-left:0;border-top:1px solid var(--line)}
+  .lessons{grid-template-columns:1fr 1fr}
+  .fde{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  body{font-size:16px}
+  .lessons{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="hero">
+  <div>
+    <div class="eyebrow">Concept prototype · Live partner API · Godot 4.6</div>
+    <h1>CharadAI</h1>
+    <p class="thesis">Charades where you type the clue instead of acting it out. A player types a free-text motion description, and <strong>DeepMotion's SayMotion API</strong> generates it live on a 3D character in about 20 seconds — everyone else races to guess what it just performed.</p>
+    <div class="links">
+      <a class="btn primary" href="https://github.com/samguan2020/charadai-concept" target="_blank" rel="noopener">Source on GitHub ↗</a>
+      <a class="btn" href="https://github.com/Donchitos/Claude-Code-Game-Studios" target="_blank" rel="noopener">Claude Code Game Studios ↗</a>
+    </div>
+    <div class="status">Concept prototype — one hypothesis, not a shipped game</div>
+  </div>
+  <figure class="demo" style="margin:0">
+    <video src="demo.mp4" controls preload="metadata"></video>
+    <figcaption class="caption">Full round captured from the running prototype: type a prompt → live SayMotion generation → reveal on the imported character.</figcaption>
+  </figure>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>~20s</b><span>runtime text-to-motion generation latency, per the live SayMotion API</span></div>
+  <div class="stat"><b>0</b><span>pre-baked animations — every clip is generated at runtime from a typed prompt</span></div>
+  <div class="stat"><b>5</b><span>async API calls orchestrated per round: auth, model lookup, submit, poll, download</span></div>
+  <div class="stat"><b>2</b><span>undocumented integration surprises found by reading the SDK source, not the docs</span></div>
+</div>
+
+<section id="test">
+  <div class="sec-head">
+    <div class="eyebrow">What this prototype tests</div>
+    <h2>A design bet and a technical bet, tested together</h2>
+  </div>
+  <p class="lede">Design bet: watching an AI generate a chaotic physical interpretation of a friend's prompt, then racing to guess it, is fun enough on its own to want another round. Technical bet: a <code>.glb</code> file returned by a partner API can be downloaded and played back on a runtime-imported skeleton in Godot 4.6. Full concept in <a href="https://github.com/samguan2020/charadai-concept/blob/master/design/gdd/game-concept.md" target="_blank" rel="noopener">design/gdd/game-concept.md</a>.</p>
+  <div class="pillars">
+    <div class="pillar"><div class="num">Pillar 1</div><h3>AI is the performer, not you</h3><p>No player is ever judged on their own acting — the AI takes the credit or the blame, removing the embarrassment barrier Charades normally carries.</p></div>
+    <div class="pillar"><div class="num">Pillar 2</div><h3>Chaos is content</h3><p>A weird or wrong AI-generated animation isn't a bug, it's the punchline. Features that make output more "correct" at the cost of funny lose.</p></div>
+    <div class="pillar"><div class="num">Pillar 3</div><h3>Every reveal is shareable</h3><p>The generated clip is the entire marketing engine — every UX and technical call defaults toward "this could be posted online in 10 seconds."</p></div>
+    <div class="pillar"><div class="num">Pillar 4</div><h3>Nobody waits bored</h3><p>Real generation latency (15-25s) is a fact of the tech, designed around rather than hidden — every wait needs something to react to.</p></div>
+  </div>
+</section>
+
+<section id="integration">
+  <div class="sec-head">
+    <div class="eyebrow">Live API integration</div>
+    <h2>A real partner API, driven end to end at runtime</h2>
+  </div>
+  <p class="lede"><a href="https://github.com/samguan2020/charadai-concept/blob/master/scripts/saymotion_client.gd" target="_blank" rel="noopener"><code>scripts/saymotion_client.gd</code></a> is a from-scratch GDScript client for DeepMotion's SayMotion REST API — no SDK for Godot exists, so this reads raw HTTP responses, parses a session cookie by hand, and drives an async job through to a playable animation.</p>
+
+  <div class="arch">
+    <svg viewBox="0 0 940 300" role="img" aria-label="Godot client authenticates and submits a prompt to the SayMotion API, which is polled every 2 seconds until done, then the resulting glb is downloaded and imported into a live Godot scene">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
+      </defs>
+
+      <!-- client -->
+      <rect x="10" y="90" width="170" height="120" rx="10" fill="var(--surface-2)" stroke="var(--line)"/>
+      <text x="95" y="122" text-anchor="middle" font-weight="700" font-size="15" fill="var(--ink)">Godot Client</text>
+      <text x="95" y="146" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">SayMotionClient.gd</text>
+      <text x="95" y="166" text-anchor="middle" font-size="13" fill="var(--muted)">Director types a</text>
+      <text x="95" y="184" text-anchor="middle" font-size="13" fill="var(--muted)">free-text prompt</text>
+
+      <!-- API box -->
+      <rect x="255" y="16" width="340" height="268" rx="12" fill="var(--surface)" stroke="var(--blue)" stroke-width="1.5"/>
+      <text x="425" y="42" text-anchor="middle" font-weight="700" font-size="15" fill="var(--ink)">DeepMotion SayMotion API</text>
+      <text x="285" y="70" font-size="12.5" fill="var(--muted)" font-family="JetBrains Mono, monospace">GET /account/v1/auth</text>
+      <text x="295" y="88" font-size="12" fill="var(--muted)">→ Basic auth, returns dmsess cookie</text>
+      <text x="285" y="114" font-size="12.5" fill="var(--muted)" font-family="JetBrains Mono, monospace">GET /character/v1/listModels</text>
+      <text x="295" y="132" font-size="12" fill="var(--muted)">→ resolve a required model id</text>
+      <text x="285" y="158" font-size="12.5" fill="var(--muted)" font-family="JetBrains Mono, monospace">POST /job/v1/process/text2motion</text>
+      <text x="295" y="176" font-size="12" fill="var(--muted)">→ submit prompt, get back rid</text>
+      <text x="285" y="202" font-size="12.5" fill="var(--gold)" font-family="JetBrains Mono, monospace">GET /job/v1/status/{rid}</text>
+      <text x="295" y="220" font-size="12" fill="var(--muted)">→ poll every 2s, up to 90s</text>
+      <text x="285" y="246" font-size="12.5" fill="var(--muted)" font-family="JetBrains Mono, monospace">GET /job/v1/download/{rid}</text>
+      <text x="295" y="264" font-size="12" fill="var(--muted)">→ resolve the .glb file URL</text>
+
+      <!-- poll self-loop -->
+      <path d="M 595 190 C 640 165, 640 235, 595 212" fill="none" stroke="var(--gold)" stroke-width="1.5" marker-end="url(#ah)"/>
+      <text x="605" y="150" font-size="11.5" fill="var(--gold)" font-family="JetBrains Mono, monospace">poll loop</text>
+
+      <!-- live scene -->
+      <rect x="720" y="90" width="210" height="120" rx="10" fill="var(--surface-2)" stroke="var(--line)"/>
+      <text x="825" y="122" text-anchor="middle" font-weight="700" font-size="15" fill="var(--ink)">Live Godot Scene</text>
+      <text x="825" y="146" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="JetBrains Mono, monospace">GLTFDocument.append_from_file()</text>
+      <text x="825" y="166" text-anchor="middle" font-size="13" fill="var(--muted)">Skeleton3D + AnimationPlayer</text>
+      <text x="825" y="184" text-anchor="middle" font-size="13" fill="var(--muted)">.play() → reveal</text>
+
+      <!-- edges -->
+      <line x1="180" y1="150" x2="252" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)"/>
+      <text x="188" y="140" font-size="11.5" fill="var(--muted)" font-family="JetBrains Mono, monospace">prompt text</text>
+      <line x1="595" y1="150" x2="718" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)"/>
+      <text x="612" y="140" font-size="11.5" fill="var(--muted)" font-family="JetBrains Mono, monospace">.glb download</text>
+    </svg>
+  </div>
+
+  <div class="sec-head" style="margin-top:48px">
+    <h3 style="font-size:24px">Two surprises the docs didn't mention</h3>
+    <p class="lede" style="margin-top:0">Found by reading the official SDK source and logging raw responses when the quickstart wasn't enough — the kind of debugging a forward-deployed engineer does against any partner's real API.</p>
+  </div>
+  <div class="lessons">
+    <article class="lesson">
+      <div class="sym">Symptom · job submit always 500'd</div>
+      <p>"Model not found" on every job, despite valid auth and a well-formed prompt — the quickstart doesn't mention a required parameter.</p>
+      <div class="fix">Fix</div>
+      <p>SayMotion requires a <code>model</code> param naming one of the account's own character model IDs. Added <code>_ensure_model_id()</code>, lazily resolved via <code>listModels</code> and cached for the session.</p>
+    </article>
+    <article class="lesson">
+      <div class="sym">Symptom · polling crashed on the first real job</div>
+      <p>Code assumed the job id (<code>rid</code>) was numeric and cast it with <code>int()</code> — it crashed the moment a real job came back.</p>
+      <div class="fix">Fix</div>
+      <p>Logged the raw response: <code>rid</code> is an opaque string like <code>"u5op75geKRgmDXVRfQAB21-text2motion"</code>. Never cast it — pass it through as-is.</p>
+    </article>
+    <article class="lesson">
+      <div class="sym">Symptom · session cookie never attached</div>
+      <p>Godot's <code>HTTPRequest</code> has no cookie jar — the API's session auth relies on the browser/client remembering a cookie between calls.</p>
+      <div class="fix">Fix</div>
+      <p>Parses the raw <code>Set-Cookie</code> response header by hand for the <code>dmsess</code> value, then threads it manually into every subsequent request.</p>
+    </article>
+  </div>
+</section>
+
+<section id="scope">
+  <div class="sec-head">
+    <div class="eyebrow">Prototype scope, stated up front</div>
+    <h2>Built to answer one question, not to ship</h2>
+  </div>
+  <p class="lede">This is a single-scene, single-screen local test — the point is to de-risk the SayMotion integration and the core fun loop before any production build starts. Failure is designed for: every network/API error surfaces its exact message in-UI, and a manual <code>.glb</code>-upload button stays available so a live playtest never hard-stops on an API hiccup.</p>
+  <div class="cut">
+    <strong>Deliberately not in this prototype</strong> — deferred to the real MVP if the hypothesis holds:
+    <ul>
+      <li>No networking or multiplayer — one shared screen, verbal guessing, local test group only</li>
+      <li>No accounts, no persistent scoring across sessions</li>
+      <li>No art polish, no audio, no character skins — 8 hardcoded secret words</li>
+      <li>No server-side credential relay — the API secret is read client-side from a local <code>.env</code>, which is fine for a prototype but must never ship this way in production</li>
+    </ul>
+  </div>
+</section>
+
+<section id="fde">
+  <div class="sec-head">
+    <div class="eyebrow">Why this matters for forward-deployed engineering</div>
+    <h2>The same loop as a customer integration</h2>
+  </div>
+  <div class="fde">
+    <div><h3>Spec before code</h3><p>The full design (pillars, MDA player-psychology breakdown, MVP cut lines) was written down before any prototype code, so the prototype tested one clear hypothesis instead of drifting.</p></div>
+    <div><h3>A real partner API, not a mock</h3><p>No Godot SDK exists for SayMotion — integrated the raw REST API directly: manual cookie handling, async job polling, and two undocumented requirements found by reading the source.</p></div>
+    <div><h3>Fails visibly, ships a fallback</h3><p>Every API failure surfaces its exact error in-UI, with a manual upload path as a fallback — production-grade resilience thinking applied even to a throwaway prototype.</p></div>
+  </div>
+</section>
+
+<footer class="foot">
+  <span>Stack: Godot 4.6 · GDScript · DeepMotion SayMotion REST API · GLTFDocument</span>
+  <span>Built with <a href="https://github.com/Donchitos/Claude-Code-Game-Studios" target="_blank" rel="noopener">Claude Code Game Studios</a></span>
+  <span>Another build: <a href="https://samguan2020.github.io/tower-of-doom/" target="_blank" rel="noopener">Tower of Doom case study ↗</a></span>
+</footer>
+
+</div>
+</body>
+</html>

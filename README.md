@@ -16,6 +16,8 @@ and `design/gdd/game-concept.md` for the full game concept this is testing.
 
 ## Showcase
 
+Read the case study: **[samguan2020.github.io/charadai-concept](https://samguan2020.github.io/charadai-concept/)**
+
 <video src="docs/demo.mp4" controls width="700">
   Demo video — see <a href="docs/demo.mp4">docs/demo.mp4</a>.
 </video>
